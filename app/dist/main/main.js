@@ -3677,9 +3677,13 @@
       const _0xlinuxInstallWindowControls = (_0x2306d8, _0x4657ac) => {
         _0x2306d8.webContents.executeJavaScript(`(() => {
           if (document.getElementById("__lantianyun-window-controls")) return;
+          const style = document.createElement("style");
+          style.id = "__lantianyun-window-style";
+          style.textContent = "html,body,#root{background:transparent!important;}#root,#root>div:first-child{border-radius:18px!important;overflow:hidden!important;}";
+          document.head.appendChild(style);
           const bar = document.createElement("div");
           bar.id = "__lantianyun-window-controls";
-          bar.style.cssText = "position:fixed;z-index:2147483647;top:8px;left:10px;display:flex;gap:6px;-webkit-app-region:no-drag;";
+          bar.style.cssText = "position:fixed;z-index:2147483647;top:12px;left:14px;display:flex;gap:6px;-webkit-app-region:no-drag;";
           const addButton = (label, action, title, hover) => {
             const button = document.createElement("button");
             button.type = "button";
@@ -3708,8 +3712,9 @@
           width: 920,
           height: 580,
           resizable: false,
-          transparent: process.platform !== "linux",
-          frame: process.platform !== "linux",
+          transparent: true,
+          frame: false,
+          backgroundColor: "#00000000",
           fullscreenable: false,
           icon: _0x2d24d8("icon.png"),
           webPreferences: {
@@ -3809,8 +3814,9 @@
             width: 1000,
             height: 600,
             resizable: true,
-            transparent: process.platform !== "linux",
-            frame: process.platform !== "linux",
+            transparent: true,
+            frame: false,
+            backgroundColor: "#00000000",
             icon: _0x2d24d8("icon.png"),
             webPreferences: {
               preload: _0x441cc1.app.isPackaged ? _0x563693().join(__dirname, "preload.js") : _0x563693().join(__dirname, "../../.erb/dll/preload.js"),

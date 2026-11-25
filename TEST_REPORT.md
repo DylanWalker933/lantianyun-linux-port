@@ -85,7 +85,7 @@ TypeError: Cannot read properties of null (reading 'length')
 - 通过本机 `7897` 代理端口访问 `https://www.gstatic.com/generate_204` 返回 HTTP 204，访问 Cloudflare 测试地址返回 HTTP 200。
 - 关闭并重新启动应用后，凭据已自动填充并完成自动登录，无需再次手动输入账密。
 - 登录令牌保存在用户配置目录中的 `linux-auth.json`，文件权限为 `0600`。
-- Linux 窗口控制已增加应用内回退按钮，避免部分 KDE 主题不绘制标题栏按钮。
+- Linux 窗口改为透明圆角样式，并在左上角提供应用内最小化和关闭按钮，避免部分 KDE 主题不绘制标题栏按钮。
 
 ## 未覆盖
 
