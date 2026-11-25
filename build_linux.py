@@ -25,9 +25,9 @@ VENDOR = PROJECT / "vendor"
 INSTALLED_APP = Path(r"D:\app\lantianyun")
 
 APP_VERSION = "1.6.4"
-LINUX_VERSION = "1.6.4-linux.2"
+LINUX_VERSION = "1.6.4-linux.5"
 ELECTRON_VERSION = "20.3.12"
-MIHOMO_VERSION = "1.10.0"
+MIHOMO_VERSION = "1.19.34"
 ARCH = "x64"
 DEB_ARCH = "amd64"
 BUNDLE_NAME = "lantianyun-linux-x86_64"
@@ -38,7 +38,7 @@ ELECTRON_URL = (
 )
 MIHOMO_URL = (
     f"https://github.com/MetaCubeX/mihomo/releases/download/v{MIHOMO_VERSION}/"
-    f"Clash.Meta-linux-amd64v1-v{MIHOMO_VERSION}.gz"
+    f"mihomo-linux-amd64-compatible-v{MIHOMO_VERSION}.gz"
 )
 
 EXECUTABLES = {
@@ -104,7 +104,7 @@ def prepare_stage() -> Path:
 
     mihomo_gz = download(
         MIHOMO_URL,
-        DOWNLOADS / f"mihomo-v{MIHOMO_VERSION}-linux-amd64v1.gz",
+        DOWNLOADS / f"mihomo-linux-amd64-compatible-v{MIHOMO_VERSION}.gz",
     )
     core_path = stage / "resources" / "binary" / "linux" / ARCH / "core"
     core_path.parent.mkdir(parents=True, exist_ok=True)
@@ -224,7 +224,7 @@ Depends: libgtk-3-0 | libgtk-3-0t64, libnss3, libxss1, libxtst6, libatspi2.0-0 |
 Recommends: fonts-noto-cjk
 Description: 蓝天云代理客户端 Debian 兼容版
  非官方 Debian 兼容构建，复用蓝天云 1.6.4 的界面资源，
- 并集成 Mihomo Meta 1.10.0 的 x86_64 Linux 内核。
+ 并集成 Mihomo Meta 1.19.34 的 x86_64 Linux 内核。
 """
     mtime = 1704067200
     with tarfile.open(destination, "w:gz", format=tarfile.PAX_FORMAT) as archive:
@@ -375,10 +375,6 @@ def build_deb(stage: Path) -> Path:
 def main() -> int:
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    node = shutil.which("node")
-    if not node:
-        raise RuntimeError("Node.js was not found")
-    run([node, str(PROJECT / "tools" / "patch_renderer_heartbeat.mjs")])
     stage = prepare_stage()
     portable = build_portable(stage)
     deb = build_deb(stage)

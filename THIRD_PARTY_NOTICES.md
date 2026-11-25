@@ -8,11 +8,11 @@ This repository contains or downloads the following third-party components:
 - License: MIT
 - Purpose: Linux desktop runtime used to repackage the Electron application.
 
-## Mihomo Meta 1.10.0
+## Mihomo Meta 1.19.34
 
 - Source: https://github.com/MetaCubeX/mihomo
 - License: MIT
-- Purpose: Linux amd64v1 core used by the migrated application.
+- Purpose: Linux amd64 core used by the migrated application.
 
 ## Original application resources
 

@@ -2,14 +2,14 @@
 
 > 本项目仅用于个人开发、学习与技术分享，无商业用途，禁止商业分发或销售。
 
-这是根据本机 1.6.4 版 Electron 应用和 Mihomo Meta 1.10.0 内核制作的非官方 Debian 兼容版本，已在 Debian 12 和 Debian 13 的 x86_64 桌面环境验证。
+这是根据本机 1.6.4 版 Electron 应用和 Mihomo Meta 1.19.34 内核制作的非官方 Debian 兼容版本，已在 Debian 12 和 Debian 13 的 x86_64 桌面环境验证。
 
 ## 安装
 
 推荐安装 `.deb`：
 
 ```bash
-sudo apt install ./lantianyun_1.6.4-linux.1_amd64.deb
+sudo apt install ./lantianyun_1.6.4-linux.5_amd64.deb
 ```
 
 安装后从应用菜单启动“蓝天云”。首次打开时沿用原来的账号登录和使用方式。
@@ -36,10 +36,12 @@ cd lantianyun-linux-x86_64
 - TUN 模式通过 systemd 服务 `com.vortex.helper.service` 运行，启用时会出现一次 polkit 管理员授权提示。
 - TUN 需要 `/dev/net/tun`。在容器或没有 TUN 设备的系统中不可用。
 - Linux 版将代理配置保存为标准 Mihomo YAML，便于内核直接读取。
+- Linux 版使用系统原生窗口标题栏，可使用窗口管理器提供的最小化和关闭按钮。
 
 ## 数据位置
 
 - 应用设置：`~/.config/lantianyun/vortex.json`
+- 登录令牌：`~/.config/lantianyun/linux-auth.json`，权限为 `0600`
 - 代理配置：`~/.config/com.vortex.helper/config.yaml`
 - 内核日志：`~/.config/com.vortex.helper/log/`
 - TUN 服务：`/etc/systemd/system/com.vortex.helper.service`

@@ -3319,9 +3319,29 @@
         console.log(_0x3e9941(_0x12f060));
         _0x39f793.reply("ipc-example", _0x3e9941("pong"));
       });
-      _0x441cc1.ipcMain.handle("update_subscription_config", async (_0x4f70c2, _0x1cff70) => _0x18643e.update_config(_0x1cff70));
+      let _0xlinuxSubscribeConfig = "";
+      _0x441cc1.ipcMain.handle("update_subscription_config", async (_0x4f70c2, _0x1cff70) => {
+        if (process.platform === "linux" && _0xlinuxSubscribeConfig) {
+          try {
+            const _0x3d91ad = typeof _0x1cff70 === "string" ? _0x23ee12.parse(_0x1cff70) : _0x1cff70;
+            const _0x4d38c4 = _0x23ee12.parse(_0xlinuxSubscribeConfig);
+            for (const _0x407d0a of ["proxies", "proxy-groups", "proxy-providers", "rules"]) {
+              if (_0x4d38c4?.[_0x407d0a]) {
+                _0x3d91ad[_0x407d0a] = _0x4d38c4[_0x407d0a];
+              }
+            }
+            return _0x18643e.update_config("", _0x3d91ad);
+          } catch (_0x11feda) {
+            console.log("[linux] subscription config merge failed:", _0x11feda?.message || _0x11feda);
+          }
+        }
+        return _0x18643e.update_config(_0x1cff70);
+      });
       _0x441cc1.ipcMain.handle("reset_account_info", async (_0x546001, _0x84ba35) => {
         _0x10b715.reset_account_info(_0x84ba35);
+        if (process.platform === "linux") {
+          _0xlinuxClearAuth();
+        }
         _0x18643e.reset_config();
       });
       _0x441cc1.ipcMain.handle("store_get_or_set", async (_0xa6042a, _0x38bd14, _0x59b9b3 = null) => {
@@ -3468,7 +3488,172 @@
           }
         });
       });
-      _0x441cc1.ipcMain.handle("fetch", async (_0x200764, _0x14e57a, _0x4aa13b) => (await (0, _0x1c0916.Ay)(_0x14e57a, _0x4aa13b)).text());
+      let _0xlinuxAuthToken = "";
+      const _0xlinuxApiBase = "https://www.lty01.com";
+      const _0xlinuxHeartbeatKey = "E93irVS1Z2eVL294rmg710FA";
+      const _0xlinuxAuthPath = _0x563693().join(_0x441cc1.app.getPath("userData"), "linux-auth.json");
+      try {
+        const _0x492e7b = JSON.parse(_0x1f0e63.readFileSync(_0xlinuxAuthPath, "utf8"));
+        _0xlinuxAuthToken = String(_0x492e7b?.auth_data || "");
+      } catch (_0x2bc95d) {}
+      function _0xlinuxClearAuth() {
+        _0xlinuxAuthToken = "";
+        _0xlinuxSubscribeInfo = null;
+        _0xlinuxSubscribeConfig = "";
+        try {
+          _0x1f0e63.unlinkSync(_0xlinuxAuthPath);
+        } catch (_0x55bfe0) {}
+      }
+      function _0xlinuxSaveAuth() {
+        try {
+          _0x1f0e63.writeFileSync(_0xlinuxAuthPath, JSON.stringify({
+            auth_data: _0xlinuxAuthToken
+          }), {
+            encoding: "utf8",
+            mode: 0o600
+          });
+          _0x1f0e63.chmodSync(_0xlinuxAuthPath, 0o600);
+        } catch (_0x1bfb9f) {
+          console.log("[linux] failed to save auth token:", _0x1bfb9f?.message || _0x1bfb9f);
+        }
+      }
+      const _0xlinuxHeartbeatResponse = (_0x199b74, _0x4ad33c = 200, _0x1e58a4 = "") => ({
+        Code: 1,
+        Data: _0x199b74 == null || typeof _0x199b74 === "string" ? (_0x199b74 ?? "") : JSON.stringify(_0x199b74),
+        Message: _0x1e58a4,
+        Status: _0x4ad33c
+      });
+      const _0xlinuxHeartbeatCrypto = require("./heartbeat-crypto.js");
+      let _0xlinuxSubscribeInfo = null;
+      async function _0xlinuxHeartbeat(_0x354cc9, _0x283ba7) {
+        let _0x58a600;
+        try {
+          _0x58a600 = JSON.parse(_0xlinuxHeartbeatCrypto.decryptFromBase64(_0x283ba7?.body, _0xlinuxHeartbeatKey));
+        } catch (_0x3f7058) {
+          return _0xlinuxHeartbeatResponse("", -1, "invalid heartbeat request");
+        }
+        const _0x455541 = Number(_0x58a600?.Command);
+        const _0x4a46ec = Array.isArray(_0x58a600?.Args) ? _0x58a600.Args : [];
+        try {
+          if (_0x455541 === 0) {
+            return _0xlinuxHeartbeatResponse("");
+          }
+          if (_0x455541 === 1) {
+            const _0x45d55d = await _0x58081b.A.get(_0xlinuxApiBase + "/api/v1/guest/comm/config");
+            return _0xlinuxHeartbeatResponse(_0x45d55d.data);
+          }
+          if (_0x455541 === 2) {
+            try {
+              const _0x53f7d8 = await _0x58081b.A.post(_0xlinuxApiBase + "/api/v1/passport/auth/login", {
+                email: String(_0x4a46ec[0] || ""),
+                password: String(_0x4a46ec[1] || "")
+              });
+              if (_0x53f7d8.data?.status === "success" && _0x53f7d8.data?.data?.auth_data) {
+                _0xlinuxAuthToken = _0x53f7d8.data.data.auth_data;
+                _0xlinuxSubscribeInfo = null;
+                _0xlinuxSubscribeConfig = "";
+                _0xlinuxSaveAuth();
+              }
+              return _0xlinuxHeartbeatResponse(_0x53f7d8.data);
+            } catch (_0x5b31d5) {
+              const _0x57e7b7 = _0x5b31d5?.response?.data;
+              return _0xlinuxHeartbeatResponse(_0x57e7b7 || { status: "fail", message: "登录失败", data: null }, 200);
+            }
+          }
+          if (_0x455541 === 5 || _0x455541 === 11) {
+            if (!_0xlinuxAuthToken) {
+              return _0xlinuxHeartbeatResponse("", 403, "未登录或登录已过期");
+            }
+            const _0x3bc563 = _0x455541 === 5 ? "/api/v1/user/getSubscribe" : "/api/v1/user/info";
+            let _0x1bfee9;
+            try {
+              _0x1bfee9 = await _0x58081b.A.get(_0xlinuxApiBase + _0x3bc563, {
+                headers: {
+                  Authorization: _0xlinuxAuthToken
+                }
+              });
+            } catch (_0x460bf3) {
+              const _0x4d478b = _0x460bf3?.response?.status;
+              if (_0x4d478b === 401 || _0x4d478b === 403) {
+                _0xlinuxClearAuth();
+                return _0xlinuxHeartbeatResponse("", 403, "未登录或登录已过期");
+              }
+              throw _0x460bf3;
+            }
+            if (_0x455541 === 5) {
+              _0xlinuxSubscribeInfo = _0x1bfee9.data;
+            }
+            return _0xlinuxHeartbeatResponse(_0x1bfee9.data);
+          }
+          if (_0x455541 === 6) {
+            if (!_0xlinuxAuthToken) {
+              return _0xlinuxHeartbeatResponse("", 403, "未登录或登录已过期");
+            }
+            if (!_0xlinuxSubscribeInfo) {
+              const _0x3f6dd6 = await _0x58081b.A.get(_0xlinuxApiBase + "/api/v1/user/getSubscribe", {
+                headers: {
+                  Authorization: _0xlinuxAuthToken
+                }
+              });
+              _0xlinuxSubscribeInfo = _0x3f6dd6.data;
+            }
+            const _0x54d4dd = String(_0x4a46ec[0] || _0xlinuxSubscribeInfo?.data?.subscribe_url || "");
+            if (!_0x54d4dd) {
+              return _0xlinuxHeartbeatResponse("", -1, "subscription URL is unavailable");
+            }
+            const _0x35b3ab = await _0x58081b.A.get(_0x54d4dd, {
+              headers: {
+                Accept: "text/plain,application/yaml,*/*",
+                "User-Agent": "clash.meta"
+              }
+            });
+            _0xlinuxSubscribeConfig = String(_0x35b3ab.data || "");
+            return _0xlinuxHeartbeatResponse(_0x35b3ab.data);
+          }
+          if (_0x455541 === 27) {
+            const _0x1d9e3a = String(_0x4a46ec[0] || _0x18643e.config_path());
+            const _0x4e72b3 = String(_0x4a46ec[1] || "false") === "true";
+            await _0x58081b.A.put("http://" + _0x17c254 + "/configs", {
+              path: _0x1d9e3a,
+              force: _0x4e72b3
+            });
+            return _0xlinuxHeartbeatResponse("");
+          }
+          if (_0x455541 === 35) {
+            return _0xlinuxHeartbeatResponse({
+              ClientId: "",
+              ExternalSupportToken: "",
+              ExternalSupportType: "crisp",
+              SupportApi: ""
+            });
+          }
+          if (_0x455541 === 42) {
+            return _0xlinuxHeartbeatResponse({
+              CloudConfig: [],
+              CurrencySymbol: "",
+              DisableIPRegion: false,
+              DisableInAppPurchase: false,
+              HomePage: _0xlinuxApiBase,
+              LastCloudConfigUpdateTime: Math.floor(Date.now() / 1000),
+              QuickLoginSsp: false,
+              SupportApi: "",
+              TelegramGroup: "",
+              ToS: _0xlinuxApiBase
+            });
+          }
+          return _0xlinuxHeartbeatResponse("", -1, "");
+        } catch (_0x3e1fc3) {
+          console.log("[linux] heartbeat command failed:", _0x455541, _0x3e1fc3?.message || _0x3e1fc3);
+          return _0xlinuxHeartbeatResponse("", -1, "heartbeat request failed");
+        }
+      }
+      _0x441cc1.ipcMain.handle("fetch", async (_0x200764, _0x14e57a, _0x4aa13b) => {
+        if (process.platform === "linux" && typeof _0x14e57a === "string" && _0x14e57a.endsWith("/heartbeat")) {
+          const _0x1fd6e7 = await _0xlinuxHeartbeat(_0x14e57a, _0x4aa13b || {});
+          return _0xlinuxHeartbeatCrypto.encryptToBase64(JSON.stringify(_0x1fd6e7), _0xlinuxHeartbeatKey);
+        }
+        return (await (0, _0x1c0916.Ay)(_0x14e57a, _0x4aa13b)).text();
+      });
       _0x441cc1.ipcMain.handle("set_system_dns", async (_0x3a4e3e, _0xa3c010) => await _0x18643e.set_system_dns(_0xa3c010));
       const _0x3eb901 = _0x18643e.confirm_clash_service();
       const _0x2d24d8 = (..._0x4ff97e) => {
@@ -3498,17 +3683,38 @@
           width: 920,
           height: 580,
           resizable: false,
-          transparent: true,
-          frame: false,
+          transparent: process.platform !== "linux",
+          frame: process.platform !== "linux",
           fullscreenable: false,
           icon: _0x2d24d8("icon.png"),
           webPreferences: {
             preload: _0x441cc1.app.isPackaged ? _0x563693().join(__dirname, "preload.js") : _0x563693().join(__dirname, "../../.erb/dll/preload.js"),
             devTools: _0x3e5a16
           },
-          titleBarStyle: "hiddenInset"
+          titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined
         });
         _0x2b36d0.loadURL(_0x40d145("index.html"));
+        _0x2b36d0.webContents.on("did-finish-load", () => {
+          if (process.platform !== "linux" || !_0xlinuxAuthToken) {
+            return;
+          }
+          _0x2b36d0?.webContents.executeJavaScript(`(() => {
+            let attempts = 0;
+            const submit = () => {
+              const inputs = [...document.querySelectorAll("input")];
+              const email = inputs.find((item) => item.type === "text");
+              const password = inputs.find((item) => item.type === "password");
+              const button = [...document.querySelectorAll("button")].find((item) => item.innerText.trim() === "登录");
+              if (email?.value && password?.value && button) {
+                button.click();
+                return;
+              }
+              attempts += 1;
+              if (attempts < 20) setTimeout(submit, 250);
+            };
+            setTimeout(submit, 250);
+          })()`).catch(() => {});
+        });
         _0x2b36d0.on("ready-to-show", () => {
           if (!_0x2b36d0) {
             throw new Error("\"mainWindow\" is not defined");
@@ -3577,14 +3783,14 @@
             width: 1000,
             height: 600,
             resizable: true,
-            transparent: true,
-            frame: false,
+            transparent: process.platform !== "linux",
+            frame: process.platform !== "linux",
             icon: _0x2d24d8("icon.png"),
             webPreferences: {
               preload: _0x441cc1.app.isPackaged ? _0x563693().join(__dirname, "preload.js") : _0x563693().join(__dirname, "../../.erb/dll/preload.js"),
               devTools: _0x3e5a16
             },
-            titleBarStyle: "hiddenInset"
+            titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined
           });
           _0x1ee3c5.loadURL(_0x40d145("index.html", "/dashboard"));
           _0x1ee3c5.on("ready-to-show", () => {});

@@ -7,13 +7,16 @@
 ## 移植内容
 
 - 使用 Electron 20.3.12 Linux x64 运行时重新打包。
-- 集成 Mihomo Meta 1.10.0 Linux amd64v1 内核。
+- 集成 Mihomo Meta 1.19.34 Linux amd64 内核。
 - 适配 Linux 二进制路径、权限和用户配置目录。
 - 将原加密配置转换为标准 Mihomo YAML，兼容 Linux 内核读取。
 - 增加 GNOME、Cinnamon、MATE 和 KDE Plasma 系统代理切换。
 - 增加基于 systemd 和 polkit 的 TUN 模式安装、更新与卸载。
 - 增加 Linux 自启动文件管理。
+- 使用 Debian 原生窗口标题栏，恢复最小化、关闭和窗口拖拽。
 - 修复公开 Mihomo 内核缺少自定义 `/heartbeat` 接口导致的登录前异常循环。
+- 持久化登录令牌，并在有已保存凭据时自动恢复登录。
+- 兼容订阅服务按 User-Agent 返回不同节点集合的行为。
 - 生成 Debian `amd64` 安装包与 x86_64 便携包。
 - 在 Debian 12 (bookworm) 和 Debian 13 (trixie) 中完成安装、界面启动和内核运行验证。
 
@@ -28,7 +31,7 @@
 推荐安装 `.deb`：
 
 ```bash
-sudo apt install ./lantianyun_1.6.4-linux.2_amd64.deb
+sudo apt install ./lantianyun_1.6.4-linux.5_amd64.deb
 ```
 
 便携包：
