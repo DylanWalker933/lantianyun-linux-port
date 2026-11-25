@@ -3674,6 +3674,31 @@
           }
         }
       }
+      const _0xlinuxInstallWindowControls = (_0x2306d8, _0x4657ac) => {
+        _0x2306d8.webContents.executeJavaScript(`(() => {
+          if (document.getElementById("__lantianyun-window-controls")) return;
+          const bar = document.createElement("div");
+          bar.id = "__lantianyun-window-controls";
+          bar.style.cssText = "position:fixed;z-index:2147483647;top:8px;left:10px;display:flex;gap:6px;-webkit-app-region:no-drag;";
+          const addButton = (label, action, title, hover) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = label;
+            button.title = title;
+            button.setAttribute("aria-label", title);
+            button.style.cssText = "all:unset;box-sizing:border-box;width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#555;background:rgba(255,255,255,.82);box-shadow:0 1px 5px rgba(0,0,0,.22);font:20px/1 sans-serif;user-select:none;";
+            button.addEventListener("mouseenter", () => { button.style.background = hover; });
+            button.addEventListener("mouseleave", () => { button.style.background = "rgba(255,255,255,.82)"; });
+            button.addEventListener("click", () => {
+              Promise.resolve(window.electron?.api?.window_control?.(action, ${_0x4657ac})).catch(() => {});
+            });
+            bar.appendChild(button);
+          };
+          addButton("−", 0, "最小化", "#e7e7e7");
+          addButton("×", 1, "关闭", "#e81123");
+          document.body.appendChild(bar);
+        })()`).catch(() => {});
+      };
       const _0x2e579f = async () => {
         const _0x525795 = {
           action: "deny"
@@ -3694,6 +3719,7 @@
           titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined
         });
         _0x2b36d0.loadURL(_0x40d145("index.html"));
+        _0x2b36d0.webContents.on("did-finish-load", () => _0xlinuxInstallWindowControls(_0x2b36d0, _0x58510f.MAIN));
         _0x2b36d0.webContents.on("did-finish-load", () => {
           if (process.platform !== "linux" || !_0xlinuxAuthToken) {
             return;
@@ -3793,6 +3819,7 @@
             titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined
           });
           _0x1ee3c5.loadURL(_0x40d145("index.html", "/dashboard"));
+          _0x1ee3c5.webContents.on("did-finish-load", () => _0xlinuxInstallWindowControls(_0x1ee3c5, _0x58510f.DASHBOARD));
           _0x1ee3c5.on("ready-to-show", () => {});
           _0x1ee3c5.on("closed", () => {
             _0x1ee3c5 = null;

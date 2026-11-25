@@ -13,7 +13,7 @@
 - 增加 GNOME、Cinnamon、MATE 和 KDE Plasma 系统代理切换。
 - 增加基于 systemd 和 polkit 的 TUN 模式安装、更新与卸载。
 - 增加 Linux 自启动文件管理。
-- 使用 Debian 原生窗口标题栏，恢复最小化、关闭和窗口拖拽。
+- 增加 Linux 窗口控制回退，保证最小化和关闭入口可见。
 - 修复公开 Mihomo 内核缺少自定义 `/heartbeat` 接口导致的登录前异常循环。
 - 持久化登录令牌，并在有已保存凭据时自动恢复登录。
 - 兼容订阅服务按 User-Agent 返回不同节点集合的行为。
@@ -31,7 +31,7 @@
 推荐安装 `.deb`：
 
 ```bash
-sudo apt install ./lantianyun_1.6.4-linux.5_amd64.deb
+sudo apt install ./lantianyun_1.6.4-linux.6_amd64.deb
 ```
 
 便携包：

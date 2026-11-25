@@ -13,7 +13,7 @@
 
 ```text
 Package: lantianyun
-Version: 1.6.4-linux.5
+Version: 1.6.4-linux.6
 Status: install ok installed
 
 Mihomo Meta v1.19.34 linux amd64 with go1.26.11
@@ -62,7 +62,7 @@ TypeError: Cannot read properties of null (reading 'length')
 
 进一步对照原 Windows 核心的空白配置状态后确认：`Command 5`（读取订阅信息）在未登录时应返回 `Status: 403`，而不是通用成功。`1.6.4-linux.3` 已按 heartbeat 命令区分回退结果，首次启动会直接显示用户名、密码、登录和注册界面。
 
-登录按钮还会发送 `Command 2`（账号密码登录）并从 `Command 5` 读取订阅信息。公开 Mihomo 没有这些私有代理接口，因此 `1.6.4-linux.5` 在主进程中兼容实现：
+登录按钮还会发送 `Command 2`（账号密码登录）并从 `Command 5` 读取订阅信息。公开 Mihomo 没有这些私有代理接口，因此 `1.6.4-linux.6` 在主进程中兼容实现：
 
 - `Command 1`：读取 `/api/v1/guest/comm/config`
 - `Command 2`：调用 `/api/v1/passport/auth/login`
@@ -85,7 +85,7 @@ TypeError: Cannot read properties of null (reading 'length')
 - 通过本机 `7897` 代理端口访问 `https://www.gstatic.com/generate_204` 返回 HTTP 204，访问 Cloudflare 测试地址返回 HTTP 200。
 - 关闭并重新启动应用后，凭据已自动填充并完成自动登录，无需再次手动输入账密。
 - 登录令牌保存在用户配置目录中的 `linux-auth.json`，文件权限为 `0600`。
-- Debian 原生窗口标题栏已启用，窗口管理器提供最小化、关闭和拖拽操作。
+- Linux 窗口控制已增加应用内回退按钮，避免部分 KDE 主题不绘制标题栏按钮。
 
 ## 未覆盖
 

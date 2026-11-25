@@ -25,7 +25,7 @@ VENDOR = PROJECT / "vendor"
 INSTALLED_APP = Path(r"D:\app\lantianyun")
 
 APP_VERSION = "1.6.4"
-LINUX_VERSION = "1.6.4-linux.5"
+LINUX_VERSION = "1.6.4-linux.6"
 ELECTRON_VERSION = "20.3.12"
 MIHOMO_VERSION = "1.19.34"
 ARCH = "x64"
