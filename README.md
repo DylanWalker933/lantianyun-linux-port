@@ -13,6 +13,7 @@
 - 增加 GNOME、Cinnamon、MATE 和 KDE Plasma 系统代理切换。
 - 增加基于 systemd 和 polkit 的 TUN 模式安装、更新与卸载。
 - 增加 Linux 自启动文件管理。
+- 修复公开 Mihomo 内核缺少自定义 `/heartbeat` 接口导致的登录前异常循环。
 - 生成 Debian `amd64` 安装包与 x86_64 便携包。
 - 在 Debian 12 (bookworm) 和 Debian 13 (trixie) 中完成安装、界面启动和内核运行验证。
 
@@ -27,7 +28,7 @@
 推荐安装 `.deb`：
 
 ```bash
-sudo apt install ./lantianyun_1.6.4-linux.1_amd64.deb
+sudo apt install ./lantianyun_1.6.4-linux.2_amd64.deb
 ```
 
 便携包：

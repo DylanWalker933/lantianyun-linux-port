@@ -25,7 +25,7 @@ VENDOR = PROJECT / "vendor"
 INSTALLED_APP = Path(r"D:\app\lantianyun")
 
 APP_VERSION = "1.6.4"
-LINUX_VERSION = "1.6.4-linux.1"
+LINUX_VERSION = "1.6.4-linux.2"
 ELECTRON_VERSION = "20.3.12"
 MIHOMO_VERSION = "1.10.0"
 ARCH = "x64"
@@ -375,6 +375,10 @@ def build_deb(stage: Path) -> Path:
 def main() -> int:
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     DOWNLOADS.mkdir(parents=True, exist_ok=True)
+    node = shutil.which("node")
+    if not node:
+        raise RuntimeError("Node.js was not found")
+    run([node, str(PROJECT / "tools" / "patch_renderer_heartbeat.mjs")])
     stage = prepare_stage()
     portable = build_portable(stage)
     deb = build_deb(stage)
