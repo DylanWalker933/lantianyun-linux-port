@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+if [ -f /opt/lantianyun/chrome-sandbox ]; then
+  chown root:root /opt/lantianyun/chrome-sandbox
+  chmod 4755 /opt/lantianyun/chrome-sandbox
+fi
+
+chmod 0755 /opt/lantianyun/lantianyun /opt/lantianyun/run-lantianyun
+chmod 0755 /opt/lantianyun/resources/binary/linux/x64/core
+chmod 0755 /opt/lantianyun/resources/binary/linux/x64/sysproxy
+chmod 0755 /opt/lantianyun/resources/lantianyun-service-helper
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -q /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+
+exit 0

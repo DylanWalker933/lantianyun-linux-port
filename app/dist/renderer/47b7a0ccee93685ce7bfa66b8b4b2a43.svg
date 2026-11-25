@@ -1,0 +1,6 @@
+<!-- set both stroke & fill on styling -->
+<svg width="24" height="24" viewBox="0 0 24 24" stroke="black" fill="black" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 6.5C2 5.67157 2.67157 5 3.5 5L19.3333 5C19.8856 5 20.3333 5.44772 20.3333 6V8H21C21.5523 8 22 8.44772 22 9V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V6.5Z" stroke-width="1.5" fill="none" />
+<path fill-rule="evenodd" clip-rule="evenodd" d="M2.75 6.5C2.75 6.91421 3.08579 7.25 3.5 7.25H20V8.75H3.5C2.67848 8.75 1.9598 8.30973 1.56704 7.65226C1.3657 7.31523 1.25 6.92113 1.25 6.5H2.75Z" stroke="none" />
+<circle cx="18" cy="14.5" r="1" stroke="none" />
+</svg>

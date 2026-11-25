@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+http_proxy=""
+https_proxy=""
+socks_proxy=""
+stop_proxy=0
+
+while (($#)); do
+  case "$1" in
+    -http)
+      http_proxy="${2:-}"
+      shift 2
+      ;;
+    -https)
+      https_proxy="${2:-}"
+      shift 2
+      ;;
+    -socks)
+      socks_proxy="${2:-}"
+      shift 2
+      ;;
+    -stop)
+      stop_proxy=1
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
+state_dir="${XDG_CONFIG_HOME:-$HOME/.config}/com.vortex.helper"
+mkdir -p "$state_dir"
+
+desktop_id="$(printf '%s %s' "${XDG_CURRENT_DESKTOP:-}" "${DESKTOP_SESSION:-}" | tr '[:upper:]' '[:lower:]')"
+
+read_proxy_host_port() {
+  local value="$1"
+  local fallback_port="$2"
+  local host="${value%:*}"
+  local port="${value##*:}"
+  if [[ "$host" == "$value" ]]; then
+    host="$value"
+    port="$fallback_port"
+  fi
+  printf '%s %s\n' "$host" "$port"
+}
+
+gnome_schema=""
+if command -v gsettings >/dev/null 2>&1; then
+  case "$desktop_id" in
+    *cinnamon*) schema_candidates=(org.cinnamon.system.proxy org.gnome.system.proxy) ;;
+    *mate*) schema_candidates=(org.mate.system.proxy org.gnome.system.proxy) ;;
+    *) schema_candidates=(org.gnome.system.proxy org.cinnamon.system.proxy org.mate.system.proxy) ;;
+  esac
+  available_schemas="$(gsettings list-schemas 2>/dev/null || true)"
+  for candidate in "${schema_candidates[@]}"; do
+    schema_path="/usr/share/glib-2.0/schemas/${candidate}.gschema.xml"
+    if [[ -f "$schema_path" ]] || grep -qx "$candidate" <<<"$available_schemas"; then
+      gnome_schema="$candidate"
+      break
+    fi
+  done
+fi
+
+gnome_proxy_disable() {
+  local backup="$state_dir/dconf-proxy.backup"
+  if [[ -s "$backup" ]] && command -v dconf >/dev/null 2>&1; then
+    dconf load /system/proxy/ <"$backup"
+    rm -f "$backup"
+  elif [[ -n "$gnome_schema" ]]; then
+    gsettings set "$gnome_schema" mode none
+  fi
+}
+
+gnome_proxy_enable() {
+  [[ -n "$gnome_schema" ]] || return 1
+  local backup="$state_dir/dconf-proxy.backup"
+  if [[ ! -s "$backup" ]] && command -v dconf >/dev/null 2>&1; then
+    dconf dump /system/proxy/ >"$backup"
+  fi
+
+  read -r http_host http_port < <(read_proxy_host_port "$http_proxy" 7897)
+  read -r https_host https_port < <(read_proxy_host_port "${https_proxy:-$http_proxy}" "$http_port")
+  read -r socks_host socks_port < <(read_proxy_host_port "${socks_proxy:-$http_proxy}" "$http_port")
+
+  gsettings set "$gnome_schema" mode manual
+  gsettings set "$gnome_schema.http" host "$http_host"
+  gsettings set "$gnome_schema.http" port "$http_port"
+  gsettings set "$gnome_schema.https" host "$https_host"
+  gsettings set "$gnome_schema.https" port "$https_port"
+  gsettings set "$gnome_schema.socks" host "$socks_host"
+  gsettings set "$gnome_schema.socks" port "$socks_port"
+  gsettings set "$gnome_schema" ignore-hosts "['localhost', '127.0.0.0/8', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']"
+}
+
+kde_tool=""
+if command -v kwriteconfig6 >/dev/null 2>&1; then
+  kde_tool="$(command -v kwriteconfig6)"
+elif command -v kwriteconfig5 >/dev/null 2>&1; then
+  kde_tool="$(command -v kwriteconfig5)"
+fi
+
+kde_proxy_disable() {
+  local backup="$state_dir/kioslaverc.backup"
+  if [[ -f "$backup" ]]; then
+    cp "$backup" "$HOME/.config/kioslaverc"
+    rm -f "$backup"
+  elif [[ -n "$kde_tool" ]]; then
+    "$kde_tool" --file kioslaverc --group "Proxy Settings" --key ProxyType 0
+  fi
+  notify_kde
+}
+
+kde_proxy_enable() {
+  [[ -n "$kde_tool" ]] || return 1
+  local backup="$state_dir/kioslaverc.backup"
+  if [[ ! -f "$backup" && -f "$HOME/.config/kioslaverc" ]]; then
+    cp "$HOME/.config/kioslaverc" "$backup"
+  fi
+  read -r http_host http_port < <(read_proxy_host_port "$http_proxy" 7897)
+  "$kde_tool" --file kioslaverc --group "Proxy Settings" --key ProxyType 1
+  "$kde_tool" --file kioslaverc --group "Proxy Settings" --key httpProxy "http://$http_host:$http_port"
+  "$kde_tool" --file kioslaverc --group "Proxy Settings" --key httpsProxy "http://$http_host:$http_port"
+  "$kde_tool" --file kioslaverc --group "Proxy Settings" --key socksProxy "socks://$http_host:$http_port"
+  "$kde_tool" --file kioslaverc --group "Proxy Settings" --key NoProxyFor "localhost,127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+  notify_kde
+}
+
+notify_kde() {
+  if command -v qdbus6 >/dev/null 2>&1; then
+    qdbus6 org.kde.KIO.Scheduler /KIO/Scheduler reparseSlaveConfiguration "" >/dev/null 2>&1 || true
+  elif command -v qdbus >/dev/null 2>&1; then
+    qdbus org.kde.KIO.Scheduler /KIO/Scheduler reparseSlaveConfiguration "" >/dev/null 2>&1 || true
+  elif command -v dbus-send >/dev/null 2>&1; then
+    dbus-send --type=signal /KIO/Scheduler org.kde.KIO.Scheduler.reparseSlaveConfiguration string:"" >/dev/null 2>&1 || true
+  fi
+}
+
+if ((stop_proxy)); then
+  if [[ "$desktop_id" == *kde* || "$desktop_id" == *plasma* ]]; then
+    kde_proxy_disable
+  else
+    gnome_proxy_disable
+  fi
+  exit 0
+fi
+
+if [[ -z "$http_proxy" ]]; then
+  echo "At least -http must be supplied" >&2
+  exit 2
+fi
+
+if [[ "$desktop_id" == *kde* || "$desktop_id" == *plasma* ]]; then
+  kde_proxy_enable
+else
+  gnome_proxy_enable
+fi

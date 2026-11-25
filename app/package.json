@@ -1,0 +1,14 @@
+{
+  "name": "lantianyun",
+  "productName": "蓝天云",
+  "version": "1.6.4-linux.1",
+  "description": "蓝天云 Debian 兼容版",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Vortex Maintainers",
+    "email": "electronreactboilerplate@gmail.com",
+    "url": "https://github.com/electron-react-boilerplate"
+  },
+  "main": "./dist/main/main.js",
+  "dependencies": {}
+}

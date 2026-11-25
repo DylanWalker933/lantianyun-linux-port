@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+script_path="$(readlink -f -- "$0")"
+app_dir="$(CDPATH= cd -- "$(dirname -- "$script_path")" && pwd)"
+binary="$app_dir/lantianyun"
+sandbox="$app_dir/chrome-sandbox"
+
+if [ ! -x "$binary" ]; then
+  echo "蓝天云 executable is missing: $binary" >&2
+  exit 1
+fi
+
+if [ ! -u "$sandbox" ]; then
+  echo "Warning: Chromium sandbox is not setuid; starting with --no-sandbox." >&2
+  exec "$binary" --no-sandbox "$@"
+fi
+
+exec "$binary" "$@"

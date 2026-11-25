@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=蓝天云
+Comment=蓝天云代理客户端
+Exec=/usr/bin/lantianyun %U
+Icon=lantianyun
+Terminal=false
+Categories=Network;Utility;
+StartupWMClass=蓝天云
